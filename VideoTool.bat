@@ -102,7 +102,7 @@ echo.
 set "videourl=null"
 set /p "videourl=Paste here the URL: "
 if not exist "VideoTool Export" mkdir "VideoTool Export"
-echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" -o "VideoTool Export\%%(playlist)s\%%(playlist_index)s - %%(title)s.%%(ext)s" !videourl!) || (echo. && echo Downloading the Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" --merge-output-format mp4 -o "VideoTool Export\%%(title)s.%%(ext)s" !videourl!)
+echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" !videourl!) || (echo. && echo Downloading the Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" --merge-output-format mp4 -o "VideoTool Export\%%(title)s.%%(ext)s" !videourl!)
 echo Done.
 echo.
 echo Press any key to go back to main Menu...
@@ -118,7 +118,7 @@ echo.
 echo.
 set "videourl=null"
 set /p "videourl=Paste here the URL: "
-echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the MP3s from playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(playlist)s\%%(playlist_index)s - %%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!) || (echo. && echo Downloading the MP3 from Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!)
+echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the MP3s from playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!) || (echo. && echo Downloading the MP3 from Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!)
 echo Done.
 echo.
 echo Press any key to go back to main Menu...
