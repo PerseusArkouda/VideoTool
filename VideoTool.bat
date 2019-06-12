@@ -34,10 +34,10 @@ setlocal enableextensions enabledelayedexpansion
 for /f %%a in ('copy /Z "%~dpf0" nul') do set "ASCII_13=%%a"
 set /p "=Checking for updates..." <NUL
 if not exist "%AppData%\video-tool-bin" mkdir "%AppData%\video-tool-bin"
-if not exist  "%AppData%\video-tool-bin\chooser.bat" powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/PerseusArkouda/VideoTool/blob/master/chooser.bat', '%AppData%\video-tool-bin\chooser.bat')"
+if not exist  "%AppData%\video-tool-bin\chooser.bat" powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/PerseusArkouda/VideoTool/master/chooser.bat', '%AppData%\video-tool-bin\chooser.bat')"
 if exist video-tool-bin rd /S /Q "video-tool-bin" 2> nul
 if exist "%AppData%\chooser.bat" move /Y "%AppData%\chooser.bat" "%AppData%\video-tool-bin\" > nul
-powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/PerseusArkouda/VideoTool/blob/master/videotoolversiononline.txt', '%AppData%\video-tool-bin\videotoolversiononline.txt')"
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/PerseusArkouda/VideoTool/master/videotoolversiononline.txt', '%AppData%\video-tool-bin\videotoolversiononline.txt')"
 set "onlineversionpath=%AppData%\video-tool-bin\videotoolversiononline.txt"
 for /f "tokens=2" %%a in (!onlineversionpath!) do set videotoolversiononline=%%a
 if exist "%AppData%\video-tool-bin\videotoolversiononline.txt" del /F /Q "%AppData%\video-tool-bin\videotoolversiononline.txt" 2> nul
@@ -305,7 +305,7 @@ goto Menu
 cls
 echo.
 echo Updating Video Tool from v%videotoolversion% to v%videotoolversiononline%. Please wait...
-powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/PerseusArkouda/VideoTool/blob/master/VideoTool.bat', 'VideoTool.tmp')" && (
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/PerseusArkouda/VideoTool/master/VideoTool.bat', 'VideoTool.tmp')" && (
 fc /B VideoTool.tmp VideoTool.bat >nul|| (del /F /Q "%AppData%\video-tool-bin\VideoTool.bat.old" 2> nul && copy /y VideoTool.bat "%AppData%\video-tool-bin\VideoTool.bat.old" > nul && copy /y VideoTool.tmp VideoTool.bat && VideoTool.bat))
 echo Done.
 timeout 4 > nul
