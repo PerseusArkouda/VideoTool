@@ -26,7 +26,7 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-set videotoolversion=1.01
+set videotoolversion=1.02
 
 :StartVideoTool
 REM --> Check for update
@@ -45,6 +45,7 @@ if exist VideoTool.tmp del /F /Q VideoTool.tmp 2> nul
 if exist VideoTool.bat.old move /Y VideoTool.bat.old "%AppData%\video-tool-bin\" > nul
 if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-tool-bin\videolist.txt" 2> nul
 if exist "%AppData%\video-tool-bin\list.txt" del /F /Q "%AppData%\video-tool-bin\list.txt" 2> nul
+if exist "%AppData%\video-tool-bin\youtube-dl.exe" "%AppData%\video-tool-bin\youtube-dl.exe" -U
 set /p "=x!ASCII_13!                            " <NUL
 
 set "cleanvar=start" && goto Clean
