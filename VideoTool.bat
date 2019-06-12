@@ -26,7 +26,7 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-set videotoolversion=1.00
+set videotoolversion=1.01
 
 :StartVideoTool
 REM --> Check for update
