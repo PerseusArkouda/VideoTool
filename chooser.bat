@@ -19,7 +19,7 @@ goto :EOF
 Add-Type -AssemblyName System.Windows.Forms
 $f = new-object Windows.Forms.OpenFileDialog
 $f.InitialDirectory = pwd
-$f.Filter = "Video Files (MP4, MOV, MPEG, MTS, MKV, AVI, FLV, MXF...)|*.mp4;*.mov;*.mpeg;*.mts;*.m2ts;*.mkv;*.avi;*.webm;*.bin;*.flv;*.hevc;*.m4v;*.3gp;*.mv;*.mxf|All Files (*.*)|*.*"
+$f.Filter = "Video Files (MP4, MOV, MPEG, MTS, MKV, AVI, FLV, MXF...)|*.mp4;*.mov;*.mpeg;*.mts;*.m2ts;*.mkv;*.avi;*.webm;*.bin;*.flv;*.hevc;*.m4v;*.3gp;*.mv;*.mxf;*.opus;*.m4a|All Files (*.*)|*.*"
 $f.ShowHelp = $true
 $f.Multiselect = $true
 [void]$f.ShowDialog()

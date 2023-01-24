@@ -10,7 +10,7 @@ REM  --> Check for permissions
 
 REM --> If error flag set, we do not have admin.
 if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
+   echo Requesting administrative privileges...
     goto UACPrompt
 ) else ( goto gotAdmin )
 
@@ -26,7 +26,7 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-set videotoolversion=1.02
+set videotoolversion=1.1
 
 :StartVideoTool
 REM --> Check for update
@@ -68,10 +68,11 @@ echo   1 - Download Video from Youtube
 echo   2 - Download Audio from Youtube
 echo.
 echo   3 - Convert video to H264 MP4
-echo   4 - Split Video
-echo   5 - Merge Videos
-echo   6 - Extract Segment of Video
-echo   7 - Repair Broken Video
+echo   4 - Convert audio or video to MP3
+echo   5 - Split Video
+echo   6 - Merge Videos
+echo   7 - Extract Segment of Video
+echo   8 - Repair Broken Video
 echo.
 echo.
 SET /P "menuchoice=Type choice number then press ENTER: "
@@ -80,10 +81,11 @@ IF [%menuchoice%]==[] echo You didn't put a proper value. Try again. && timeout 
 if %menuchoice%==1 goto DLVideo
 if %menuchoice%==2 goto DLAudio
 if %menuchoice%==3 goto Convert
-if %menuchoice%==4 goto Split
-if %menuchoice%==5 goto Merge
-if %menuchoice%==6 goto Extract
-if %menuchoice%==7 goto Repair
+if %menuchoice%==4 goto ConvertAudio
+if %menuchoice%==5 goto Split
+if %menuchoice%==6 goto Merge
+if %menuchoice%==7 goto Extract
+if %menuchoice%==8 goto Repair
 if %menuchoice%==10 (
 goto Update
 ) else (
@@ -145,9 +147,9 @@ call :VideoVariables "ConvertLoop"
 if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto ConvertRetry
 set /a newcount+=1
 echo.
-echo Starting the video conversion process of !countedvideofile[%newcount%]!
+echo Starting the video conversion process of "!countedvideofile[%newcount%]!"
 echo.
-set countedvideoext=!countedvideofile[%newcount%]:~0,-4!
+set "countedvideoext=!countedvideofile[%newcount%]:~0,-4!"
 if not exist "VideoTool Export" mkdir "VideoTool Export"
 if %speedconfirm%==s "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -i "!countedfullvideofile[%newcount%]!" -f mp4 -vcodec libx264 -strict -2 -c copy "VideoTool Export\Converted-%countedvideoext%.mp4" && goto ConvertDone
 "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -i "!countedfullvideofile[%newcount%]!" -f mp4 -vcodec libx264 -strict -2 "VideoTool Export\Converted-%countedvideoext%.mp4"
@@ -155,6 +157,37 @@ if %speedconfirm%==s "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide
 if %newcount%==%number% goto EndConvertLoop
 goto ConvertLoop
 :EndConvertLoop
+if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-tool-bin\videolist.txt" 2> nul
+echo Done.
+echo.
+echo Press any key to go back to main Menu...
+pause > nul
+goto Menu
+
+:ConvertAudio
+cls
+echo.
+echo This Option will convert almost any audio or video format to MP3.
+echo You can select one or more audio or video files at once.
+echo.
+echo.
+:ConvertAudioRetry
+if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-tool-bin\videolist.txt" 2> nul
+set newcount=0
+call "%AppData%\video-tool-bin\chooser.bat"
+call :VideoVariables "ConvertAudioLoop"
+:ConvertAudioLoop
+if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto ConvertAudioRetry
+set /a newcount+=1
+echo.
+echo Starting the audio or video conversion process of "!countedvideofile[%newcount%]!"
+echo.
+set "countedvideoext=!countedvideofile[%newcount%]:~0,-4!"
+if not exist "VideoTool Export" mkdir "VideoTool Export"
+"%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -i "!countedfullvideofile[%newcount%]!" -f mp3 -strict -2 "VideoTool Export\Converted-%countedvideoext%.mp3"
+if %newcount%==%number% goto EndConvertAudioLoop
+goto ConvertAudioLoop
+:EndConvertAudioLoop
 if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-tool-bin\videolist.txt" 2> nul
 echo Done.
 echo.
@@ -183,7 +216,7 @@ call :VideoVariables "SplitLoop"
 if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto SplitRetry
 set /a newcount+=1
 echo.
-echo Starting the video splitting process of !countedvideofile[%newcount%]!
+echo Starting the video splitting process of "!countedvideofile[%newcount%]!"
 echo.
 if not exist "VideoTool Export" mkdir "VideoTool Export"
 if %speedconfirm%==s "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel panic -hide_banner -stats -accurate_seek -i "!countedfullvideofile[%newcount%]!" -ss 0 -t 00:%splittime%.0 -c copy "VideoTool Export\Split1-!countedvideofile[%newcount%]!"
@@ -220,11 +253,11 @@ call :VideoVariables "MergeLoop"
 if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto MergeRetry
 set /a newcount+=1
 echo.
-echo Starting the video merging process of %countedvideofile[1]%
-echo with %countedvideofile[2]%
+echo Starting the video merging process of "%countedvideofile[1]%"
+echo with "%countedvideofile[2]%"
 echo.
 if not exist "VideoTool Export" mkdir "VideoTool Export"
-(echo file '!countedfullvideofile[1]!' & echo file '!countedfullvideofile[2]!' )>"%AppData%\video-tool-bin\list.txt"
+(echo file "!countedfullvideofile[1]!" & echo file "!countedfullvideofile[2]!" )>"%AppData%\video-tool-bin\list.txt"
 if %speedconfirm%==s "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -safe 0 -f concat -i "%AppData%\video-tool-bin\list.txt"  -strict -2 -c copy "VideoTool Export\Merged-%countedvideofile[1]%-%countedvideofile[2]%" && goto MergeDone
 "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -safe 0 -f concat -i "%AppData%\video-tool-bin\list.txt" "VideoTool Export\Merged-%countedvideofile[1]%-%countedvideofile[2]%"
 :MergeDone
@@ -258,7 +291,7 @@ call :VideoVariables "ExtractLoop"
 if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto ExtractRetry
 set /a newcount+=1
 echo.
-echo Starting the video extracting process of %countedvideofile[1]%
+echo Starting the video extracting process of "%countedvideofile[1]%"
 echo.
 if not exist "VideoTool Export" mkdir "VideoTool Export"
 if %speedconfirm%==s "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -accurate_seek -i "%countedfullvideofile[1]%" -ss 00:%extractstart%.0 -to 00:%extractend%.0  -strict -2 -c copy "VideoTool Export\Segment-%countedvideofile[1]%" && goto ExtractDone
@@ -287,7 +320,7 @@ call :VideoVariables "RepairLoop"
 if not exist "%AppData%\video-tool-bin\videolist.txt" echo. && echo Something went wrong. Try again && timeout 2 > nul && goto RepairRetry
 set /a newcount+=1
 echo.
-echo Starting the video repairing process of !countedvideofile[%newcount%]!
+echo Starting the video repairing process of "!countedvideofile[%newcount%]!"
 echo.
 if not exist "VideoTool Export" mkdir "VideoTool Export"
 "%AppData%\video-tool-bin\ffmpeg.exe" -loglevel error -hide_banner -stats -err_detect ignore_err -i "!countedfullvideofile[%newcount%]!" -c copy "VideoTool Export\Fixed-!countedvideofile[%newcount%]!"
@@ -305,7 +338,7 @@ goto Menu
 :Update
 cls
 echo.
-echo Updating Video Tool from v%videotoolversion% to v%videotoolversiononline%. Please wait...
+echo Updating Video Tool from v"%videotoolversion%" to v"%videotoolversiononline%". Please wait...
 powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/PerseusArkouda/VideoTool/master/VideoTool.bat', 'VideoTool.tmp')" && (
 fc /B VideoTool.tmp VideoTool.bat >nul|| (del /F /Q "%AppData%\video-tool-bin\VideoTool.bat.old" 2> nul && copy /y VideoTool.bat "%AppData%\video-tool-bin\VideoTool.bat.old" > nul && copy /y VideoTool.tmp VideoTool.bat && VideoTool.bat))
 echo Done.
@@ -324,13 +357,14 @@ powershell -Command "(New-Object Net.WebClient).DownloadFile('https://yt-dl.org/
 echo Done.
 echo.
 echo Downloading FFMpeg...
-powershell -Command "(New-Object Net.WebClient).DownloadFile('https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-4.1.3-win32-static.zip', '%AppData%\video-tool-bin\ffmpeg.zip')"
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip', '%AppData%\video-tool-bin\ffmpeg.zip')"
 if not exist "%AppData%\video-tool-bin\youtube-dl.exe" echo. && echo Something went wrong. Trying again. && timeout 2 > nul && goto RetryFFMpeg
 if not exist "%AppData%\video-tool-bin\ffmpeg.zip" echo. && echo Something went wrong. Trying again. && timeout 2 > nul && goto RetryFFMpeg
 Call :UnZipFile "%AppData%\video-tool-bin\" "%AppData%\video-tool-bin\ffmpeg.zip" FFmpegUnzipDone
 :FFMpegUnzipDone
-move /Y "%AppData%\video-tool-bin\ffmpeg-4.1.3-win32-static\bin\ffmpeg.exe" "%AppData%\video-tool-bin\" > nul
-rd /S /Q "%AppData%\video-tool-bin\ffmpeg-4.1.3-win32-static" 2> nul
+copy "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared\bin\ffmpeg.exe" "%AppData%\video-tool-bin\" > nul
+copy "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared\bin\*.dll" "%AppData%\video-tool-bin\" > nul
+rd /S /Q "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared" 2> nul
 del /F /Q "%AppData%\video-tool-bin\ffmpeg.zip" 2> nul
 echo Done.
 echo.
@@ -346,9 +380,9 @@ for /f %%g in ('!cmd!') do set number=%%g
 for /L %%i in (1,1,%number%) do (
 for /f "tokens=*" %%a in (!videolistpath!) do (
 set /a count+=1
-set fullvideofile=%%a
-set countedfullvideofile[!count!]=%%a
-for /f "tokens=*" %%x in ('dir /b /a-d "!fullvideofile!"') do set countedvideofile[!count!]=%%x
+set "fullvideofile=%%a"
+set "countedfullvideofile[!count!]=%%a"
+for /f "tokens=*" %%x in ('dir /b /a-d "!fullvideofile!"') do set "countedvideofile[!count!]=%%x"
 )
 )
 goto %~1
@@ -359,19 +393,19 @@ if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-too
 if "%cleanvar%"=="start" goto CleanStartOk
 
 :UnZipFile <ExtractTo> <newzipfile>
-set vbs="%temp%\_.vbs"
-if exist %vbs% del /f /q %vbs%
->%vbs%  echo Set fso = CreateObject("Scripting.FileSystemObject")
->>%vbs% echo If NOT fso.FolderExists(%1) Then
->>%vbs% echo fso.CreateFolder(%1)
->>%vbs% echo End If
->>%vbs% echo set objShell = CreateObject("Shell.Application")
->>%vbs% echo set FilesInZip=objShell.NameSpace(%2).items
->>%vbs% echo objShell.NameSpace(%1).CopyHere(FilesInZip)
->>%vbs% echo Set fso = Nothing
->>%vbs% echo Set objShell = Nothing
-cscript //nologo %vbs%
-if exist %vbs% del /f /q %vbs%
+set "vbs=%temp%\_.vbs"
+if exist "%vbs%" del /f /q "%vbs%"
+>"%vbs%"  echo Set fso = CreateObject("Scripting.FileSystemObject")
+>>"%vbs%" echo If NOT fso.FolderExists(%1) Then
+>>"%vbs%" echo fso.CreateFolder(%1)
+>>"%vbs%" echo End If
+>>"%vbs%" echo set objShell = CreateObject("Shell.Application")
+>>"%vbs%" echo set FilesInZip=objShell.NameSpace(%2).items
+>>"%vbs%" echo objShell.NameSpace(%1).CopyHere(FilesInZip)
+>>"%vbs%" echo Set fso = Nothing
+>>"%vbs%" echo Set objShell = Nothing
+cscript //nologo "%vbs%"
+if exist "%vbs%" del /f /q "%vbs%"
 goto %3
 
 :Error
