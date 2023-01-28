@@ -26,7 +26,7 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-set videotoolversion=1.1
+set videotoolversion=1.2
 
 :StartVideoTool
 REM --> Check for update
@@ -46,12 +46,14 @@ if exist VideoTool.bat.old move /Y VideoTool.bat.old "%AppData%\video-tool-bin\"
 if exist "%AppData%\video-tool-bin\videolist.txt" del /F /Q "%AppData%\video-tool-bin\videolist.txt" 2> nul
 if exist "%AppData%\video-tool-bin\list.txt" del /F /Q "%AppData%\video-tool-bin\list.txt" 2> nul
 if exist "%AppData%\video-tool-bin\youtube-dl.exe" "%AppData%\video-tool-bin\youtube-dl.exe" -U
+if not exist "%AppData%\video-tool-bin\yt-dlp.txt" if exist "%AppData%\video-tool-bin\youtube-dl.exe" del /F /Q "%AppData%\video-tool-bin\youtube-dl.exe" 2> nul && echo old youtube-dl replaced by yt-dlp > "%AppData%\video-tool-bin\yt-dlp.txt"
 set /p "=x!ASCII_13!                            " <NUL
 
 set "cleanvar=start" && goto Clean
 :CleanStartOk
 
 if not exist "%AppData%\video-tool-bin\ffmpeg.exe" goto FFMpegMissing
+if not exist "%AppData%\video-tool-bin\youtube-dl.exe" goto FFMpegMissing
 
 :Menu
 cls
@@ -105,7 +107,7 @@ echo.
 set "videourl=null"
 set /p "videourl=Paste here the URL: "
 if not exist "VideoTool Export" mkdir "VideoTool Export"
-echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" !videourl!) || (echo. && echo Downloading the Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" --merge-output-format mp4 -o "VideoTool Export\%%(title)s.%%(ext)s" !videourl!)
+echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" --no-colours -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" !videourl!) || (echo. && echo Downloading the Video... && "%AppData%\video-tool-bin\youtube-dl.exe" --no-colours -f "bestvideo[height>=720]+bestaudio[ext=m4a]/mp4" --merge-output-format mp4 -o "VideoTool Export\%%(title)s.%%(ext)s" !videourl!)
 echo Done.
 echo.
 echo Press any key to go back to main Menu...
@@ -121,7 +123,7 @@ echo.
 echo.
 set "videourl=null"
 set /p "videourl=Paste here the URL: "
-echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the MP3s from playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!) || (echo. && echo Downloading the MP3 from Video... && "%AppData%\video-tool-bin\youtube-dl.exe" -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!)
+echo "!videourl!" | FIND "list" > nul && (echo. && echo Downloading the MP3s from playlist... && "%AppData%\video-tool-bin\youtube-dl.exe" --no-colours -i -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(playlist)s\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!) || (echo. && echo Downloading the MP3 from Video... && "%AppData%\video-tool-bin\youtube-dl.exe" --no-colours -f "bestvideo[height>=720]+bestaudio[ext=m4a]" -o "VideoTool Export\%%(title)s.%%(ext)s" -x --audio-format mp3 --audio-quality 0 !videourl!)
 echo Done.
 echo.
 echo Press any key to go back to main Menu...
@@ -352,10 +354,15 @@ echo It seems you are running Video Tool for the first time.
 :RetryFFMpeg
 echo Downloading required software. Please wait...
 echo.
+echo Checking for Youtube-DL...
+if exist "%AppData%\video-tool-bin\youtube-dl.exe" goto SkipYoutubeDL
 echo Downloading Youtube-DL...
-powershell -Command "(New-Object Net.WebClient).DownloadFile('https://yt-dl.org/downloads/2019.06.08/youtube-dl.exe', '%AppData%\video-tool-bin\youtube-dl.exe')"
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', '%AppData%\video-tool-bin\youtube-dl.exe')"
+:SkipYoutubeDL
 echo Done.
 echo.
+echo Checking for FFMpeg...
+if exist "%AppData%\video-tool-bin\ffmpeg.exe" goto SkipFFMpeg
 echo Downloading FFMpeg...
 powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip', '%AppData%\video-tool-bin\ffmpeg.zip')"
 if not exist "%AppData%\video-tool-bin\youtube-dl.exe" echo. && echo Something went wrong. Trying again. && timeout 2 > nul && goto RetryFFMpeg
@@ -366,6 +373,7 @@ copy "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared\bin\ffmpeg.
 copy "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared\bin\*.dll" "%AppData%\video-tool-bin\" > nul
 rd /S /Q "%AppData%\video-tool-bin\ffmpeg-master-latest-win64-gpl-shared" 2> nul
 del /F /Q "%AppData%\video-tool-bin\ffmpeg.zip" 2> nul
+:SkipFFMpeg
 echo Done.
 echo.
 timeout 4 > nul
